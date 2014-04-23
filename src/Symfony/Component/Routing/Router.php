@@ -17,8 +17,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\ConfigurableRequirementsInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Generator\Dumper\GeneratorDumperInterface;
+use Symfony\Component\Routing\Matcher\RequestMatcherInterface;
 use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 use Symfony\Component\Routing\Matcher\Dumper\MatcherDumperInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * The Router class is an example of the integration of all pieces of the
@@ -26,7 +28,7 @@ use Symfony\Component\Routing\Matcher\Dumper\MatcherDumperInterface;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class Router implements RouterInterface
+class Router implements RouterInterface, RequestMatcherInterface
 {
     /**
      * @var UrlMatcherInterface|null
@@ -82,7 +84,7 @@ class Router implements RouterInterface
         $this->loader = $loader;
         $this->resource = $resource;
         $this->logger = $logger;
-        $this->context = null === $context ? new RequestContext() : $context;
+        $this->context = $context ?: new RequestContext();
         $this->setOptions($options);
     }
 
@@ -215,6 +217,20 @@ class Router implements RouterInterface
     public function match($pathinfo)
     {
         return $this->getMatcher()->match($pathinfo);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function matchRequest(Request $request)
+    {
+        $matcher = $this->getMatcher();
+        if (!$matcher instanceof RequestMatcherInterface) {
+            // fallback to the default UrlMatcherInterface
+            return $matcher->match($request->getPathInfo());
+        }
+
+        return $matcher->matchRequest($request);
     }
 
     /**

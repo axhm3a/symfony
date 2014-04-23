@@ -12,7 +12,6 @@
 namespace Symfony\Component\HttpKernel\DataCollector;
 
 use Symfony\Component\HttpKernel\DataCollector\Util\ValueExporter;
-use Symfony\Component\HttpKernel\DataCollector\Util\ValueExporterInterface;
 
 /**
  * DataCollector.
@@ -54,6 +53,6 @@ abstract class DataCollector implements DataCollectorInterface, \Serializable
             $this->valueExporter = new ValueExporter();
         }
 
-        $this->valueExporter->exportValue($var);
+        return $this->valueExporter->exportValue($var);
     }
 }

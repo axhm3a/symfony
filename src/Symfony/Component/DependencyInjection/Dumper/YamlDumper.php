@@ -75,6 +75,10 @@ class YamlDumper extends Dumper
             $code .= sprintf("        class: %s\n", $definition->getClass());
         }
 
+        if (!$definition->isPublic()) {
+            $code .= "        public: false\n";
+        }
+
         $tagsCode = '';
         foreach ($definition->getTags() as $name => $tags) {
             foreach ($tags as $attributes) {
@@ -133,6 +137,14 @@ class YamlDumper extends Dumper
 
         if (ContainerInterface::SCOPE_CONTAINER !== $scope = $definition->getScope()) {
             $code .= sprintf("        scope: %s\n", $scope);
+        }
+
+        if (null !== $decorated = $definition->getDecoratedService()) {
+            list ($decorated, $renamedId) = $decorated;
+            $code .= sprintf("        decorates: %s\n", $decorated);
+            if (null !== $renamedId) {
+                $code .= sprintf("        decoration_inner_name: %s\n", $renamedId);
+            }
         }
 
         if ($callable = $definition->getConfigurator()) {
@@ -279,7 +291,7 @@ class YamlDumper extends Dumper
      * Prepares parameters.
      *
      * @param array   $parameters
-     * @param Boolean $escape
+     * @param bool    $escape
      *
      * @return array
      */
